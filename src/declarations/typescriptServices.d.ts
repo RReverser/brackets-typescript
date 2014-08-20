@@ -1935,6 +1935,31 @@ declare module ts {
             category: DiagnosticCategory;
             key: string;
         };
+        JSX_attribute_was_expected: {
+            code: number;
+            category: DiagnosticCategory;
+            key: string;
+        };
+        JSX_value_should_be_either_string_or_expression_wrapped_into_braces: {
+            code: number;
+            category: DiagnosticCategory;
+            key: string;
+        };
+        JSX_attribute_value_can_t_be_empty_expression: {
+            code: number;
+            category: DiagnosticCategory;
+            key: string;
+        };
+        Expected_closing_tag_for_0_but_found_Slash_1: {
+            code: number;
+            category: DiagnosticCategory;
+            key: string;
+        };
+        JSX_element_should_refer_to_unambigous_constructor_or_factory: {
+            code: number;
+            category: DiagnosticCategory;
+            key: string;
+        };
     };
 }
 declare module ts {
@@ -1943,6 +1968,11 @@ declare module ts {
     }
     interface CommentCallback {
         (pos: number, end: number): void;
+    }
+    enum XJSContext {
+        None = 0,
+        Attributes = 1,
+        Contents = 2,
     }
     interface Scanner {
         getStartPos(): number;
@@ -1954,9 +1984,12 @@ declare module ts {
         hasPrecedingLineBreak(): boolean;
         isIdentifier(): boolean;
         isReservedWord(): boolean;
+        isMaybeTag(): boolean;
         reScanGreaterToken(): SyntaxKind;
         reScanSlashToken(): SyntaxKind;
         scan(): SyntaxKind;
+        getXJSContext(): XJSContext;
+        setXJSContext(context: XJSContext): XJSContext;
         setText(text: string): void;
         setTextPos(textPos: number): void;
         tryScan<T>(callback: () => T): T;
@@ -2159,11 +2192,16 @@ declare module ts {
         ModuleBlock = 173,
         ImportDeclaration = 174,
         ExportAssignment = 175,
-        EnumMember = 176,
-        SourceFile = 177,
-        Program = 178,
-        SyntaxList = 179,
-        Count = 180,
+        XJSExpressionContainer = 176,
+        XJSElement = 177,
+        XJSOpeningElement = 178,
+        XJSClosingElement = 179,
+        XJSAttribute = 180,
+        EnumMember = 181,
+        SourceFile = 182,
+        Program = 183,
+        SyntaxList = 184,
+        Count = 185,
         FirstAssignment,
         LastAssignment,
         FirstReservedWord,
@@ -2405,6 +2443,24 @@ declare module ts {
     }
     interface ExportAssignment extends Statement {
         exportName: Identifier;
+    }
+    interface XJSExpressionContainer extends Expression {
+        expression?: Expression;
+    }
+    interface XJSElement extends Expression {
+        openingElement: XJSOpeningElement;
+        children: NodeArray<Expression>;
+        closingElement?: XJSClosingElement;
+    }
+    interface XJSOpeningElement extends Node {
+        name: EntityName;
+        attributes: NodeArray<XJSAttribute>;
+        selfClosing: boolean;
+    }
+    interface XJSClosingElement extends Node {
+        name: EntityName;
+    }
+    interface XJSAttribute extends PropertyDeclaration {
     }
     interface FileReference extends TextRange {
         filename: string;

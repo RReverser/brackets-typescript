@@ -43,7 +43,6 @@ class Token {
     position: number;
 }
 
-
 class LineDescriptor {
     tokenMap: { [position: number]: Token };
     eolState: ts.EndOfLineState = ts.EndOfLineState.Start;
@@ -57,8 +56,6 @@ class LineDescriptor {
         return clone;
     }
 }
-
-
 
 class TypeScriptMode implements CodeMirror.CodeMirrorMode<LineDescriptor> {
     private options: CodeMirror.EditorConfiguration;
@@ -140,7 +137,19 @@ class TypeScriptMode implements CodeMirror.CodeMirrorMode<LineDescriptor> {
             lineDescriptor.tokenMap[tokens[i].position] = tokens[i];
         }
         
-       
+        ts.forEachChild(this.createSourceFile(text), function callback(node: ts.Node) {
+            ts.forEachChild(node, (child: ts.Expression) => {
+                if (node.kind === ts.SyntaxKind.XJSElement && child.kind === ts.SyntaxKind.StringLiteral) {
+                    for (var pos in lineDescriptor.tokenMap) {
+                        if (pos >= child.pos && pos < child.end) {
+                            lineDescriptor.tokenMap[pos].classification = ts.TokenClass.RegExpLiteral;
+                        }
+                    }
+                } else {
+                    ts.forEachChild(child, callback);
+                }
+            });
+        });
     }
     
     private createSourceFile(text: string) {
