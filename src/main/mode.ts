@@ -136,20 +136,6 @@ class TypeScriptMode implements CodeMirror.CodeMirrorMode<LineDescriptor> {
         for (var i = 0, l = tokens.length; i < l; i++) {
             lineDescriptor.tokenMap[tokens[i].position] = tokens[i];
         }
-        
-        ts.forEachChild(this.createSourceFile(text), function callback(node: ts.Node) {
-            ts.forEachChild(node, (child: ts.Expression) => {
-                if (node.kind === ts.SyntaxKind.XJSElement && child.kind === ts.SyntaxKind.StringLiteral) {
-                    for (var pos in lineDescriptor.tokenMap) {
-                        if (pos >= child.pos && pos < child.end) {
-                            lineDescriptor.tokenMap[pos].classification = ts.TokenClass.RegExpLiteral;
-                        }
-                    }
-                } else {
-                    ts.forEachChild(child, callback);
-                }
-            });
-        });
     }
     
     private createSourceFile(text: string) {
@@ -200,6 +186,7 @@ function getStyleForToken(token: Token, textBefore: string): string {
         case TokenClass.StringLiteral:
             return 'string';
         case TokenClass.RegExpLiteral:
+        case TokenClass.XJSText:
             return 'string-2';
         case TokenClass.Operator: 
             return 'operator';
