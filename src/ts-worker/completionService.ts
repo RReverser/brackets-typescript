@@ -66,15 +66,8 @@ class CompletionService implements completion.ICompletionService {
                  currentToken = TypeScript.Syntax.findTokenOnLeft(sourceUnit, index),
                  match: string;
                  
-            if (currentToken && this.isValidTokenKind(currentToken.kind())) {
-                match = currentToken.fullText();
-                if (currentToken.leadingTrivia()) {
-                    match = match.substr(currentToken.leadingTriviaWidth());
-                }
-                
-                if (currentToken.trailingTrivia()) {
-                    match = match.substr(0, match.length - currentToken.trailingTriviaWidth());
-                }
+            if (currentToken && this.isValidTokenKind(currentToken.kind()) && !currentToken.trailingTriviaWidth()) {
+                match = currentToken.fullText().substr(currentToken.leadingTriviaWidth());
                 
                 typeScriptEntries = typeScriptEntries.filter(entry => {
                     return entry.name && entry.name.toLowerCase().indexOf(match.toLowerCase()) === 0;
@@ -170,7 +163,7 @@ class CompletionService implements completion.ICompletionService {
                 entries: completionEntries,
                 match : match
             };
-        }).catch(() => ({
+        }).catch((e) => (console.error(e.stack), {
             entries: [],
             match : ''
         }));
