@@ -66,11 +66,11 @@ class CompletionService implements completion.ICompletionService {
                  currentToken = TypeScript.Syntax.findTokenOnLeft(sourceUnit, index),
                  match: string;
                  
-            if (currentToken && this.isValidTokenKind(currentToken.kind()) && !currentToken.trailingTriviaWidth()) {
-                match = currentToken.fullText().substr(currentToken.leadingTriviaWidth());
+            if (currentToken && this.isValidTokenKind(currentToken.kind()) && index <= TypeScript.end(currentToken)) {
+                match = currentToken.text().toLowerCase();
                 
                 typeScriptEntries = typeScriptEntries.filter(entry => {
-                    return entry.name && entry.name.toLowerCase().indexOf(match.toLowerCase()) === 0;
+                    return entry.name.slice(0, match.length).toLowerCase() === match;
                 });
             }
             

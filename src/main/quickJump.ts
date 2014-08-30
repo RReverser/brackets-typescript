@@ -40,6 +40,7 @@ class TypeScriptQuickJumpProvider extends ServiceConsumer<definition.IDefinition
             service.getDefinitionForFile(fileName, pos).then(definitions => {
                 if (!definitions || definitions.length === 0) {
                     deferred.reject();
+                    return;
                 }
 
                 definitions.filter(definition => definition.fileName !== fileName || definition.lineStart !== pos.line);
