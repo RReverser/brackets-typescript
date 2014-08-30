@@ -28,11 +28,6 @@ export interface LexicalStructureItem {
     name: string;
     
     /**
-     * Name of the item container
-     */
-    containerName: string;
-    
-    /**
      * Position of the item in the file
      */
     position: CodeMirror.Position;

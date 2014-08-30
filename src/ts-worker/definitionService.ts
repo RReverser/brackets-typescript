@@ -48,18 +48,7 @@ class DefinitionService implements definition.IDefinitionService {
             if (index < 0) {
                 return [];
             }
-            return languageService.getDefinitionAtPosition(fileName, index).map(definition => {
-                var startPos = languageServiceHost.indexToPosition(definition.fileName, definition.minChar),
-                    endPos = languageServiceHost.indexToPosition(definition.fileName, definition.limChar);
-                return {
-                    name: (definition.containerName ? (definition.containerName + '.') : '') + definition.name,
-                    lineStart : startPos.line,
-                    charStart : startPos.ch,
-                    lineEnd : endPos.line,
-                    charEnd : endPos.ch,
-                    fileName: definition.fileName
-                };
-            });
+            return languageService.getDefinitionAtPosition(fileName, index);
         }).catch(() => []);
     }
 }

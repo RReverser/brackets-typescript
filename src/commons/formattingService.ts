@@ -29,7 +29,7 @@ interface IFormattingService {
      * @return a promise resolving to a formating range info
      */
     getFormatingForFile(fileName: string, options: ts.FormatCodeOptions,
-            startPos?: CodeMirror.Position, endPos?: CodeMirror.Position): Promise<ts.TextEdit[]>;
+            startPos?: CodeMirror.Position, endPos?: CodeMirror.Position): Promise<ts.TextChange[]>;
 }
 
 export = IFormattingService;

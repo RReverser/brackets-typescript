@@ -191,12 +191,9 @@ class LanguageServiceHost extends logger.LogingClass implements ts.LanguageServi
         return null;
     }
 
-    getScriptVersion(fileName: string): number {
+    getScriptVersion(fileName: string): string {
         var script = this.fileNameToScript.get(fileName);
-        if (script) {
-            return script.version;
-        }
-        return 0;
+        return String(script && script.version || 0);
     }
 
     getScriptIsOpen(fileName: string): boolean {
@@ -360,7 +357,8 @@ class ScriptSnapshot implements TypeScript.IScriptSnapshot {
         return this.lineMap.lineStarts();
     }
 
-    getTextChangeRangeSinceVersion(scriptVersion: number): TypeScript.TextChangeRange {
+    getChangeRange(oldSnapshot: TypeScript.IScriptSnapshot): TypeScript.TextChangeRange {
+        var scriptVersion = (<ScriptSnapshot>oldSnapshot).version;
         if (scriptVersion === this.version) {
             // No edits!
             return TypeScript.TextChangeRange.unchanged;

@@ -41,11 +41,10 @@ class LexicalStructureService implements ls.ILexicalStructureService {
     getLexicalStructureForFile(fileName: string): Promise<ls.LexicalStructureItem[]> {
         return this.projectManager.getProjectForFile(fileName).then(project => {
             var languageServiceHost = project.getLanguageServiceHost();
-            var items = project.getLanguageService().getScriptLexicalStructure(fileName) || [] ;
+            var items = project.getLanguageService().getNavigationBarItems(fileName) || [] ;
             return items.map(item => ({
-                name: item.name,
-                containerName : item.containerName,
-                position: languageServiceHost.indexToPosition(fileName, item.minChar)
+                name: item.text,
+                position: languageServiceHost.indexToPosition(fileName, item.spans[0].start())
             }));
         });
     }

@@ -59,8 +59,8 @@ class FormattingManager extends ServiceConsumer<IFormatingService> {
                     return;
                 }
                 editor.document.setText(
-                    textEdits.reduce((text: string, edit: ts.TextEdit) => {
-                        return text.substr(0, edit.minChar) + edit.text + text.substr(edit.limChar);
+                    textEdits.reduce((text: string, edit: ts.TextChange) => {
+                        return text.substr(0, edit.span.start()) + edit.newText + text.substr(edit.span.end());
                     }, editor.document.getText())
                 );
             });
