@@ -54,7 +54,7 @@ describe('LanguageServiceHost', function () {
             languageServiceHost.updateScript('file1.ts', 'foo bar');
             var snapshot = languageServiceHost.getScriptSnapshot('file1.ts');
             expect(snapshot.getText(0, snapshot.getLength())).toBe('foo bar');
-            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe(2);
+            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe('2');
         });
         
         it('should throws an error if the updated script does not exists', function () {
@@ -84,13 +84,14 @@ describe('LanguageServiceHost', function () {
         
         it('should allows to edit script', function () {
             languageServiceHost.addScript('file1.ts', 'hello world');
+            var snapshot1 = languageServiceHost.getScriptSnapshot('file1.ts');
             languageServiceHost.editScript('file1.ts', 6, 11, 'bar');
             languageServiceHost.editScript('file1.ts', 0, 5, 'foo');
             var snapshot = languageServiceHost.getScriptSnapshot('file1.ts');
             expect(snapshot.getText(0, snapshot.getLength())).toBe('foo bar');
-            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe(3);
-            expect(snapshot.getTextChangeRangeSinceVersion(1).newLength()).toBe(7);
-            expect(snapshot.getTextChangeRangeSinceVersion(3).isUnchanged()).toBe(true);
+            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe('3');
+            expect(snapshot.getChangeRange(snapshot1).newLength()).toBe(7);
+            expect(snapshot.getChangeRange(snapshot).isUnchanged()).toBe(true);
             
             
             expect(function () {
@@ -99,7 +100,7 @@ describe('LanguageServiceHost', function () {
             
             
             languageServiceHost.updateScript('file1.ts', 'hello world');
-            expect(languageServiceHost.getScriptSnapshot('file1.ts').getTextChangeRangeSinceVersion(1)).toBe(null);
+            expect(languageServiceHost.getScriptSnapshot('file1.ts').getChangeRange(snapshot1)).toBe(null);
         });
         
         
@@ -139,7 +140,7 @@ describe('LanguageServiceHost', function () {
         
         it('should provide default value when there is no script', function () {
             expect(languageServiceHost.getScriptSnapshot('file1.ts')).toBeNull();
-            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe(0);
+            expect(languageServiceHost.getScriptVersion('file1.ts')).toBe('0');
             expect(languageServiceHost.getScriptIsOpen('file1.ts')).toBe(false);
         });
         
