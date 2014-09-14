@@ -179,7 +179,7 @@ function getStyleForToken(token: Token, textBefore: string): string {
         case TokenClass.StringLiteral:
             return 'string';
         case TokenClass.RegExpLiteral:
-        case TokenClass.XJSText:
+        case TokenClass.JSXText:
             return 'string-2';
         case TokenClass.Operator: 
             return 'operator';
