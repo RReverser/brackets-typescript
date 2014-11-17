@@ -4128,12 +4128,23 @@ var ts;
                         }
                     }
                     else if (token === 17 /* GreaterThanToken */) {
-                        nextToken();
                         if (canParseSemicolon()) {
                             return 1 /* True */;
                         }
                         else if (isMaybeTag) {
                             return 2 /* Unknown */;
+                        }
+                        else if (nextToken() === 6 /* OpenBraceToken */) {
+                            nextToken();
+                            if (token === 7 /* CloseBraceToken */) {
+                                return isMaybeTag ? 2 /* Unknown */ : 0 /* False */;
+                            }
+                            else if (token === 57 /* Identifier */ && nextToken() === 44 /* ColonToken */) {
+                                return 0 /* False */;
+                            }
+                            else {
+                                return 1 /* True */;
+                            }
                         }
                         else {
                             return 0 /* False */;

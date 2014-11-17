@@ -7737,20 +7737,13 @@ var CompletionService = (function () {
                 return { entries: [], match: '' };
             }
 
-            var sourceUnit = documentRegistry.acquireDocument(fileName, languageServiceHost.getCompilationSettings(), languageServiceHost.getScriptSnapshot(fileName), languageServiceHost.getScriptVersion(fileName), languageServiceHost.getScriptIsOpen(fileName), project.getReferencedOrImportedFiles(fileName)).getSourceUnit(), currentToken = TypeScript.Syntax.findTokenOnLeft(sourceUnit, index), match;
+            var sourceUnit = documentRegistry.acquireDocument(fileName, languageServiceHost.getCompilationSettings(), languageServiceHost.getScriptSnapshot(fileName), languageServiceHost.getScriptVersion(fileName), languageServiceHost.getScriptIsOpen(fileName)).getSourceUnit(), currentToken = TypeScript.Syntax.findTokenOnLeft(sourceUnit, index), match;
 
-            if (currentToken && _this.isValidTokenKind(currentToken.kind())) {
-                match = currentToken.fullText();
-                if (currentToken.leadingTrivia()) {
-                    match = match.substr(currentToken.leadingTriviaWidth());
-                }
-
-                if (currentToken.trailingTrivia()) {
-                    match = match.substr(0, match.length - currentToken.trailingTriviaWidth());
-                }
+            if (currentToken && _this.isValidTokenKind(currentToken.kind()) && index <= TypeScript.end(currentToken)) {
+                match = currentToken.text().toLowerCase();
 
                 typeScriptEntries = typeScriptEntries.filter(function (entry) {
-                    return entry.name && entry.name.toLowerCase().indexOf(match.toLowerCase()) === 0;
+                    return entry.name.slice(0, match.length).toLowerCase() === match;
                 });
             }
 
@@ -7836,8 +7829,8 @@ var CompletionService = (function () {
                 entries: completionEntries,
                 match: match
             };
-        }).catch(function () {
-            return ({
+        }).catch(function (e) {
+            return (console.error(e.stack), {
                 entries: [],
                 match: ''
             });
@@ -7894,7 +7887,7 @@ var DefinitionService = (function () {
                 return [];
             }
             return languageService.getDefinitionAtPosition(fileName, index).map(function (definition) {
-                var startPos = languageServiceHost.indexToPosition(definition.fileName, definition.minChar), endPos = languageServiceHost.indexToPosition(definition.fileName, definition.limChar);
+                var startPos = languageServiceHost.indexToPosition(definition.fileName, definition.textSpan.start()), endPos = languageServiceHost.indexToPosition(definition.fileName, definition.textSpan.end());
                 return {
                     name: (definition.containerName ? (definition.containerName + '.') : '') + definition.name,
                     lineStart: startPos.line,
@@ -7996,9 +7989,6 @@ var ErrorService = (function () {
                 case 0 /* Warning */:
                     type = Type.WARNING;
                     break;
-                case 3 /* NoPrefix */:
-                    type = Type.ERROR;
-                    break;
                 case 2 /* Message */:
                     type = Type.META;
                     break;
@@ -8087,7 +8077,10 @@ module.exports = FormattingService;
 //   limitations under the License.
 'use strict';
 // inject global in the worker
-importScripts('../../third_party/typescript/typescriptServices.js');
+Error.stackTraceLimit = 1000;
+
+require('bluebird').longStackTraces();
+importScripts('/C:/Web/TSX/built/local/typescriptServices.js');
 global.window = self;
 
 var TypeScriptProjectManager = require('./projectManager');
@@ -8126,7 +8119,7 @@ bridge.init({
 });
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../commons/logger":46,"../commons/workerBridge":51,"./completionService":53,"./definitionService":54,"./errorService":55,"./formattingService":56,"./lexicalStructureService":59,"./project":60,"./projectManager":61}],58:[function(require,module,exports){
+},{"../commons/logger":46,"../commons/workerBridge":51,"./completionService":53,"./definitionService":54,"./errorService":55,"./formattingService":56,"./lexicalStructureService":59,"./project":60,"./projectManager":61,"bluebird":5}],58:[function(require,module,exports){
 //   Copyright 2013-2014 François de Campredon
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -8322,10 +8315,7 @@ var LanguageServiceHost = (function (_super) {
 
     LanguageServiceHost.prototype.getScriptVersion = function (fileName) {
         var script = this.fileNameToScript.get(fileName);
-        if (script) {
-            return script.version;
-        }
-        return 0;
+        return String(script && script.version || 0);
     };
 
     LanguageServiceHost.prototype.getScriptIsOpen = function (fileName) {
@@ -8471,7 +8461,8 @@ var ScriptSnapshot = (function () {
         return this.lineMap.lineStarts();
     };
 
-    ScriptSnapshot.prototype.getTextChangeRangeSinceVersion = function (scriptVersion) {
+    ScriptSnapshot.prototype.getChangeRange = function (oldSnapshot) {
+        var scriptVersion = oldSnapshot.version;
         if (scriptVersion === this.version) {
             // No edits!
             return TypeScript.TextChangeRange.unchanged;
@@ -8525,12 +8516,11 @@ var LexicalStructureService = (function () {
     LexicalStructureService.prototype.getLexicalStructureForFile = function (fileName) {
         return this.projectManager.getProjectForFile(fileName).then(function (project) {
             var languageServiceHost = project.getLanguageServiceHost();
-            var items = project.getLanguageService().getScriptLexicalStructure(fileName) || [];
+            var items = project.getLanguageService().getNavigationBarItems(fileName) || [];
             return items.map(function (item) {
                 return ({
-                    name: item.name,
-                    containerName: item.containerName,
-                    position: languageServiceHost.indexToPosition(fileName, item.minChar)
+                    name: item.text,
+                    position: languageServiceHost.indexToPosition(fileName, item.spans[0].start())
                 });
             });
         });

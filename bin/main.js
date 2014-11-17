@@ -7191,7 +7191,7 @@ var FormattingManager = (function (_super) {
                         return;
                     }
                     editor.document.setText(textEdits.reduce(function (text, edit) {
-                        return text.substr(0, edit.minChar) + edit.text + text.substr(edit.limChar);
+                        return text.substr(0, edit.span.start()) + edit.newText + text.substr(edit.span.end());
                     }, editor.document.getText()));
                 });
             });
@@ -7490,6 +7490,7 @@ function getStyleForToken(token, textBefore) {
         case 7 /* StringLiteral */:
             return 'string';
         case 8 /* RegExpLiteral */:
+        case 9 /* JSXText */:
             return 'string-2';
         case 2 /* Operator */:
             return 'operator';
@@ -7699,6 +7700,7 @@ var TypeScriptQuickEditProvider = (function (_super) {
                 service.getDefinitionForFile(fileName, pos).then(function (definitions) {
                     if (!definitions || definitions.length === 0) {
                         deferred.reject();
+                        return;
                     }
 
                     definitions.filter(function (definition) {
@@ -7877,6 +7879,7 @@ var TypeScriptQuickJumpProvider = (function (_super) {
                 service.getDefinitionForFile(fileName, pos).then(function (definitions) {
                     if (!definitions || definitions.length === 0) {
                         deferred.reject();
+                        return;
                     }
 
                     definitions.filter(function (definition) {
